@@ -41,7 +41,6 @@ typedef struct IEcoLab1VTbl {
     uint32_t (ECOCALLMETHOD *Release)(/* in */ IEcoLab1Ptr_t me);
 
     /* IEcoLab1 */
-	int16_t (ECOCALLMETHOD *MyFunction)(/* in */ IEcoLab1Ptr_t me, /* in */ char_t* Name, /* out */ char_t** CopyName);
 	int16_t (ECOCALLMETHOD *Bsearchi)(/* in */ IEcoLab1Ptr_t me, /* in */ const int* arr, /* in */ const int n, /* in */ const int target, /* out */ int* index);
 	int16_t (ECOCALLMETHOD *Bsearchl)(/* in */ IEcoLab1Ptr_t me, /* in */ const long long* arr, /* in */ const int n, /* in */ const long long target, /* out */ int* index);
 	int16_t (ECOCALLMETHOD *Bsearchf)(/* in */ IEcoLab1Ptr_t me, /* in */ const float* arr, /* in */ const int n, /* in */ const float target, /* out */ int* index);

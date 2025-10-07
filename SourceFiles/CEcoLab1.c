@@ -120,29 +120,6 @@ static uint32_t ECOCALLMETHOD CEcoLab1_Release(/* in */ IEcoLab1Ptr_t me) {
  * </описание>
  *
  */
-static int16_t ECOCALLMETHOD CEcoLab1_MyFunction(/* in */ IEcoLab1Ptr_t me, /* in */ char_t* Name, /* out */ char_t** copyName) {
-    CEcoLab1* pCMe = (CEcoLab1*)me;
-    int16_t index = 0;
-
-    /* Проверка указателей */
-    if (me == 0 || Name == 0 || copyName == 0) {
-        return ERR_ECO_POINTER;
-    }
-
-    /* Копирование строки */
-    while(Name[index] != 0) {
-        index++;
-    }
-    pCMe->m_Name = (char_t*)pCMe->m_pIMem->pVTbl->Alloc(pCMe->m_pIMem, index + 1);
-    index = 0;
-    while(Name[index] != 0) {
-        pCMe->m_Name[index] = Name[index];
-        index++;
-    }
-    *copyName = pCMe->m_Name;
-
-    return ERR_ECO_SUCCESES;
-}
 
 static int16_t ECOCALLMETHOD CEcoLab1_Bsearchi(/* in */ IEcoLab1Ptr_t me, /* in */ const int* arr, /* in */ const int n, /* in */ const int target, /* out */ int* index) {
 	CEcoLab1* pCMe = (CEcoLab1*)me;
@@ -151,6 +128,10 @@ static int16_t ECOCALLMETHOD CEcoLab1_Bsearchi(/* in */ IEcoLab1Ptr_t me, /* in 
 	int r = n - 1;
 	int m = 0;
 	*index = -1;
+
+    if (me == 0 || arr == 0 || index == 0) {
+        return ERR_ECO_POINTER;
+    }
 
 	while (l <= r) {
 		m = (l + r) / 2;
@@ -176,6 +157,10 @@ static int16_t ECOCALLMETHOD CEcoLab1_Bsearchl(/* in */ IEcoLab1Ptr_t me, /* in 
 	int m = 0;
 	*index = -1;
 
+    if (me == 0 || arr == 0 || index == 0) {
+        return ERR_ECO_POINTER;
+    }
+
 	while (l <= r) {
 		m = (l + r) / 2;
 		if (target == arr[m]) {
@@ -199,6 +184,10 @@ static int16_t ECOCALLMETHOD CEcoLab1_Bsearchf(/* in */ IEcoLab1Ptr_t me, /* in 
 	int r = n - 1;
 	int m = 0;
 	*index = -1;
+
+    if (me == 0 || arr == 0 || index == 0) {
+        return ERR_ECO_POINTER;
+    }
 
 	while (l <= r) {
 		m = (l + r) / 2;
@@ -228,6 +217,10 @@ static int16_t ECOCALLMETHOD CEcoLab1_Bsearchd(/* in */ IEcoLab1Ptr_t me, /* in 
 	int m = 0;
 	*index = -1;
 
+    if (me == 0 || arr == 0 || index == 0) {
+        return ERR_ECO_POINTER;
+    }
+
 	while (l <= r) {
 		m = (l + r) / 2;
 		value = arr[m] - target;
@@ -255,6 +248,10 @@ static int16_t ECOCALLMETHOD CEcoLab1_Bsearchld(/* in */ IEcoLab1Ptr_t me, /* in
 	int r = n - 1;
 	int m = 0;
 	*index = -1;
+
+    if (me == 0 || arr == 0 || index == 0) {
+        return ERR_ECO_POINTER;
+    }
 
 	while (l <= r) {
 		m = (l + r) / 2;
@@ -323,7 +320,6 @@ IEcoLab1VTbl g_x277FC00C35624096AFCFC125B94EEC90VTbl = {
     CEcoLab1_QueryInterface,
     CEcoLab1_AddRef,
     CEcoLab1_Release,
-    CEcoLab1_MyFunction,
 	CEcoLab1_Bsearchi,
 	CEcoLab1_Bsearchl,
 	CEcoLab1_Bsearchf,

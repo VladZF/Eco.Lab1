@@ -94,6 +94,7 @@ void TestBsearchInt(IEcoLab1* pIEcoLab1, IEcoMemoryAllocator1* pIMem) {
     LARGE_INTEGER start, end;
     long long elapsed_ticks;
     double avg_cpu_time_ns;
+    int result;
 
     printf("Binary search INT tests started\n");
 
@@ -103,7 +104,12 @@ void TestBsearchInt(IEcoLab1* pIEcoLab1, IEcoMemoryAllocator1* pIMem) {
 
         QueryPerformanceCounter(&start);
         for (launch_i = 0; launch_i < LAUNCH_COUNT; launch_i++) {
-            pIEcoLab1->pVTbl->Bsearchi(pIEcoLab1, arr, size, -1, &index);
+            result = pIEcoLab1->pVTbl->Bsearchi(pIEcoLab1, arr, size, -1, &index);
+            if (result != ERR_ECO_SUCCESES) {
+                printf("Binary search INT tests failed\n");
+                pIMem->pVTbl->Free(pIMem, arr);
+                return;
+            }
         }
         QueryPerformanceCounter(&end);
 
@@ -126,6 +132,7 @@ void TestBsearchLongLong(IEcoLab1* pIEcoLab1, IEcoMemoryAllocator1* pIMem) {
     LARGE_INTEGER start, end;
     long long elapsed_ticks;
     double avg_cpu_time_ns;
+    int result;
 
     printf("Binary search LONG LONG tests started\n");
 
@@ -135,7 +142,12 @@ void TestBsearchLongLong(IEcoLab1* pIEcoLab1, IEcoMemoryAllocator1* pIMem) {
 
         QueryPerformanceCounter(&start);
         for (launch_i = 0; launch_i < LAUNCH_COUNT; launch_i++) {
-            pIEcoLab1->pVTbl->Bsearchl(pIEcoLab1, arr, size, -1LL, &index);
+            result = pIEcoLab1->pVTbl->Bsearchl(pIEcoLab1, arr, size, -1LL, &index);
+            if (result != ERR_ECO_SUCCESES) {
+                printf("Binary search LONG LONG tests failed\n");
+                pIMem->pVTbl->Free(pIMem, arr);
+                return;
+            }
         }
         QueryPerformanceCounter(&end);
 
@@ -158,6 +170,7 @@ void TestBsearchFloat(IEcoLab1* pIEcoLab1, IEcoMemoryAllocator1* pIMem) {
     LARGE_INTEGER start, end;
     long long elapsed_ticks;
     double avg_cpu_time_ns;
+    int result;
 
     printf("Binary search FLOAT tests started\n");
 
@@ -167,7 +180,12 @@ void TestBsearchFloat(IEcoLab1* pIEcoLab1, IEcoMemoryAllocator1* pIMem) {
 
         QueryPerformanceCounter(&start);
         for (launch_i = 0; launch_i < LAUNCH_COUNT; launch_i++) {
-            pIEcoLab1->pVTbl->Bsearchf(pIEcoLab1, arr, size, -1.0f, &index);
+            result = pIEcoLab1->pVTbl->Bsearchf(pIEcoLab1, arr, size, -1.0f, &index);
+            if (result != ERR_ECO_SUCCESES) {
+                printf("Binary search FLOAT tests failed\n");
+                pIMem->pVTbl->Free(pIMem, arr);
+                return;
+            }
         }
         QueryPerformanceCounter(&end);
 
@@ -190,6 +208,7 @@ void TestBsearchDouble(IEcoLab1* pIEcoLab1, IEcoMemoryAllocator1* pIMem) {
     LARGE_INTEGER start, end;
     long long elapsed_ticks;
     double avg_cpu_time_ns;
+    int result;
 
     printf("Binary search DOUBLE tests started\n");
 
@@ -199,7 +218,12 @@ void TestBsearchDouble(IEcoLab1* pIEcoLab1, IEcoMemoryAllocator1* pIMem) {
 
         QueryPerformanceCounter(&start);
         for (launch_i = 0; launch_i < LAUNCH_COUNT; launch_i++) {
-            pIEcoLab1->pVTbl->Bsearchd(pIEcoLab1, arr, size, -1.0, &index);
+            result = pIEcoLab1->pVTbl->Bsearchd(pIEcoLab1, arr, size, -1.0, &index);
+            if (result != ERR_ECO_SUCCESES) {
+                printf("Binary search DOUBLE tests failed\n");
+                pIMem->pVTbl->Free(pIMem, arr);
+                return;
+            }
         }
         QueryPerformanceCounter(&end);
 
@@ -222,6 +246,7 @@ void TestBsearchLongDouble(IEcoLab1* pIEcoLab1, IEcoMemoryAllocator1* pIMem) {
     LARGE_INTEGER start, end;
     long long elapsed_ticks;
     double avg_cpu_time_ns;
+    int result;
 
     printf("Binary search LONG DOUBLE tests started\n");
 
@@ -231,7 +256,12 @@ void TestBsearchLongDouble(IEcoLab1* pIEcoLab1, IEcoMemoryAllocator1* pIMem) {
 
         QueryPerformanceCounter(&start);
         for (launch_i = 0; launch_i < LAUNCH_COUNT; launch_i++) {
-            pIEcoLab1->pVTbl->Bsearchld(pIEcoLab1, arr, size, -1.0L, &index);
+            result = pIEcoLab1->pVTbl->Bsearchld(pIEcoLab1, arr, size, -1.0L, &index);
+            if (result != ERR_ECO_SUCCESES) {
+                printf("Binary search LONG DOUBLE tests failed\n");
+                pIMem->pVTbl->Free(pIMem, arr);
+                return;
+            }
         }
         QueryPerformanceCounter(&end);
 
