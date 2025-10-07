@@ -95,7 +95,7 @@ void TestBsearchInt(IEcoLab1* pIEcoLab1, IEcoMemoryAllocator1* pIMem) {
     LARGE_INTEGER start, end;
     long long elapsed_ticks;
     double avg_cpu_time_ns;
-    int result;
+    int result; // void* result; (для stdlib bsearch)
 
     printf("Binary search INT tests started\n");
 
@@ -106,7 +106,7 @@ void TestBsearchInt(IEcoLab1* pIEcoLab1, IEcoMemoryAllocator1* pIMem) {
         QueryPerformanceCounter(&start);
         for (launch_i = 0; launch_i < LAUNCH_COUNT; launch_i++) {
             result = pIEcoLab1->pVTbl->Bsearchi(pIEcoLab1, arr, size, -1, &index);
-            if (result != ERR_ECO_SUCCESES) {
+            if (result != ERR_ECO_SUCCESES) { // Данной проверки нет для stdlib bsearch
                 printf("Binary search INT tests failed\n");
                 pIMem->pVTbl->Free(pIMem, arr);
                 return;
@@ -114,7 +114,7 @@ void TestBsearchInt(IEcoLab1* pIEcoLab1, IEcoMemoryAllocator1* pIMem) {
         }
         QueryPerformanceCounter(&end);
 
-        assert(index == -1);
+        assert(index == -1); // assert(index == NULL); (для stdlib bsearch)
         elapsed_ticks = end.QuadPart - start.QuadPart;
         avg_cpu_time_ns = ((double)elapsed_ticks * 1000000000.0 / g_performanceFrequency.QuadPart) / LAUNCH_COUNT;
         printf("test %d elements: %.2f ns.\n", size, avg_cpu_time_ns);
@@ -125,12 +125,32 @@ void TestBsearchInt(IEcoLab1* pIEcoLab1, IEcoMemoryAllocator1* pIMem) {
 }
 ```
 
+
+
 Стоит заметить, что в массиве все элементы неотрицательны, но в тестах в качестве target выступает -1. Это сделано для того, чтобы основной цикл в бинарном поиске отработал полностью и оценка производительности была более справедливой.
 
 ### Результаты
 
-![Terminal](https://github.com/VladZF/Eco.Lab1/blob/master/Pictures/Terminal.png)
+Таблица 1: Результаты собственной реализации Binary Search
+Тип данных	1,000 элементов (ns)	10,000 элементов (ns)	100,000 элементов (ns)	1,000,000 элементов (ns)	10,000,000 элементов (ns)
+INT	50.27	54.43	64.84	63.88	76.16
+LONG LONG	56.35	57.84	66.17	71.40	79.16
+FLOAT	48.66	67.10	72.49	77.25	90.86
+DOUBLE	50.19	65.81	84.39	83.73	89.47
+LONG DOUBLE	55.67	63.15	89.07	115.64	90.91
 
-![Charts](https://github.com/VladZF/Eco.Lab1/blob/master/Pictures/Charts.png)
+Таблица 2: Результаты стандартной функции stdlib bsearch
+Тип данных	1,000 элементов (ns)	10,000 элементов (ns)	100,000 элементов (ns)	1,000,000 элементов (ns)	10,000,000 элементов (ns)
+INT	189.63	278.87	387.32	506.17	496.81
+LONG LONG	209.10	288.27	365.48	461.50	501.44
+FLOAT	216.84	315.64	349.90	444.61	500.84
+DOUBLE	270.83	301.92	426.50	430.48	544.09
+LONG DOUBLE	218.74	295.55	357.26	434.51	500.57
 
-По результатам можно сделать вывод, что даже массивы с огромным количеством элементов отрабатывают менее чем за 100 наносекунд. При этом можно заметить, что хоть и немного, но методы, обрабатывающие массивы с нецелыми числами работают дольше. В целом алгоритм реализован удачно. 
+![MyBearch](https://github.com/VladZF/Eco.Lab1/blob/master/Pictures/MyBsearch.png)
+
+![StdlibBsearch](https://github.com/VladZF/Eco.Lab1/blob/master/Pictures/StdlibBsearch.png)
+
+Собственная реализация бинарного поиска даже на огромных размерах массивов отрабатывает очень быстро - менее 100 наносекунд. При этом можно заметить, что хоть и немного, но методы, обрабатывающие массивы с нецелыми числами работают дольше. Stdlib реализация со всеми типами работает примерно одинаково (по крайней мере с теми, что рассматривались в данной работе). Время выполнения значительно дольше, но это связано с тем, что стандартный вариант работает с указателем на void, что приводит к многочисленным приведениям типов, но это делает функцию универсальной. Собственная реализация же может работать только с пятью типами данных, при этом для каждого типа - свой метод, что очень ограничивает в использовании.
+
+**Вывод:** Собственная реализация работает быстрее, чем стандартная, но ограничена в использовании.

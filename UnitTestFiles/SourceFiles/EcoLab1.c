@@ -85,6 +85,7 @@ long double* GenerateLongDoubleArray(IEcoMemoryAllocator1* pIMem, int size) {
     return arr;
 }
 
+/* Тесты собственной реализации bsearch */
 void TestBsearchInt(IEcoLab1* pIEcoLab1, IEcoMemoryAllocator1* pIMem) {
     int* arr;
     int size_i;
@@ -275,6 +276,223 @@ void TestBsearchLongDouble(IEcoLab1* pIEcoLab1, IEcoMemoryAllocator1* pIMem) {
     printf("Binary search LONG DOUBLE tests completed\n\n");
 }
 
+/* Компараторы для stdlib bsearch */
+int __cdecl compareInt(const void* a, const void* b) {
+    int int_a = *((int*)a);
+    int int_b = *((int*)b);
+
+    if (int_a == int_b) return 0;
+    else if (int_a < int_b) return -1;
+    else return 1;
+}
+
+int __cdecl compareLongLong(const void* a, const void* b) {
+    long long long_a = *((long long*)a);
+    long long long_b = *((long long*)b);
+
+    if (long_a == long_b) return 0;
+    else if (long_a < long_b) return -1;
+    else return 1;
+}
+
+int __cdecl compareFloat(const void* a, const void* b) {
+    float float_a = *((float*)a);
+    float float_b = *((float*)b);
+
+    if (float_a == float_b) return 0;
+    else if (float_a < float_b) return -1;
+    else return 1;
+}
+
+int __cdecl compareDouble(const void* a, const void* b) {
+    double double_a = *((double*)a);
+    double double_b = *((double*)b);
+
+    if (double_a == double_b) return 0;
+    else if (double_a < double_b) return -1;
+    else return 1;
+}
+
+int __cdecl compareLongDouble(const void* a, const void* b) {
+    long double ldouble_a = *((long double*)a);
+    long double ldouble_b = *((long double*)b);
+
+    if (ldouble_a == ldouble_b) return 0;
+    else if (ldouble_a < ldouble_b) return -1;
+    else return 1;
+}
+
+/* Тесты stdlib bsearch */
+void TestBsearchIntStdLib(IEcoMemoryAllocator1* pIMem) {
+    int* arr;
+    int size_i;
+    int launch_i;
+    int size;
+    int key = -1;
+    LARGE_INTEGER start, end;
+    long long elapsed_ticks;
+    double avg_cpu_time_ns;
+    void* result;
+
+    printf("stdlib bsearch INT tests started\n");
+
+    for (size_i = 0; size_i < SIZES_COUNT; size_i++) {
+        size = g_testSizes[size_i];
+        arr = GenerateIntArray(pIMem, size);
+
+        QueryPerformanceCounter(&start);
+        for (launch_i = 0; launch_i < LAUNCH_COUNT; launch_i++) {
+            result = bsearch(&key, arr, size, sizeof(int), compareInt);
+        }
+        QueryPerformanceCounter(&end);
+
+        assert(result == NULL);
+
+        elapsed_ticks = end.QuadPart - start.QuadPart;
+        avg_cpu_time_ns = ((double)elapsed_ticks * 1000000000.0 / g_performanceFrequency.QuadPart) / LAUNCH_COUNT;
+        printf("test %d elements: %.2f ns.\n", size, avg_cpu_time_ns);
+        pIMem->pVTbl->Free(pIMem, arr);
+    }
+
+    printf("stdlib bsearch INT tests completed\n\n");
+}
+
+void TestBsearchLongLongStdLib(IEcoMemoryAllocator1* pIMem) {
+    long long* arr;
+    int size_i;
+    int launch_i;
+    int size;
+    long long key = -1LL;
+    LARGE_INTEGER start, end;
+    long long elapsed_ticks;
+    double avg_cpu_time_ns;
+    void* result;
+
+    printf("stdlib bsearch LONG LONG tests started\n");
+
+    for (size_i = 0; size_i < SIZES_COUNT; size_i++) {
+        size = g_testSizes[size_i];
+        arr = GenerateLongLongArray(pIMem, size);
+
+        QueryPerformanceCounter(&start);
+        for (launch_i = 0; launch_i < LAUNCH_COUNT; launch_i++) {
+            result = bsearch(&key, arr, size, sizeof(long long), compareLongLong);
+        }
+        QueryPerformanceCounter(&end);
+
+        assert(result == NULL);
+
+        elapsed_ticks = end.QuadPart - start.QuadPart;
+        avg_cpu_time_ns = ((double)elapsed_ticks * 1000000000.0 / g_performanceFrequency.QuadPart) / LAUNCH_COUNT;
+        printf("test %d elements: %.2f ns.\n", size, avg_cpu_time_ns);
+        pIMem->pVTbl->Free(pIMem, arr);
+    }
+
+    printf("stdlib bsearch LONG LONG tests completed\n\n");
+}
+
+void TestBsearchFloatStdLib(IEcoMemoryAllocator1* pIMem) {
+    float* arr;
+    int size_i;
+    int launch_i;
+    int size;
+    float key = -1.0f;
+    LARGE_INTEGER start, end;
+    long long elapsed_ticks;
+    double avg_cpu_time_ns;
+    void* result;
+
+    printf("stdlib bsearch FLOAT tests started\n");
+
+    for (size_i = 0; size_i < SIZES_COUNT; size_i++) {
+        size = g_testSizes[size_i];
+        arr = GenerateFloatArray(pIMem, size);
+
+        QueryPerformanceCounter(&start);
+        for (launch_i = 0; launch_i < LAUNCH_COUNT; launch_i++) {
+            result = bsearch(&key, arr, size, sizeof(float), compareFloat);
+        }
+        QueryPerformanceCounter(&end);
+
+        assert(result == NULL);
+
+        elapsed_ticks = end.QuadPart - start.QuadPart;
+        avg_cpu_time_ns = ((double)elapsed_ticks * 1000000000.0 / g_performanceFrequency.QuadPart) / LAUNCH_COUNT;
+        printf("test %d elements: %.2f ns.\n", size, avg_cpu_time_ns);
+        pIMem->pVTbl->Free(pIMem, arr);
+    }
+
+    printf("stdlib bsearch FLOAT tests completed\n\n");
+}
+
+void TestBsearchDoubleStdLib(IEcoMemoryAllocator1* pIMem) {
+    double* arr;
+    int size_i;
+    int launch_i;
+    int size;
+    double key = -1.0;
+    LARGE_INTEGER start, end;
+    long long elapsed_ticks;
+    double avg_cpu_time_ns;
+    void* result;
+
+    printf("stdlib bsearch DOUBLE tests started\n");
+
+    for (size_i = 0; size_i < SIZES_COUNT; size_i++) {
+        size = g_testSizes[size_i];
+        arr = GenerateDoubleArray(pIMem, size);
+
+        QueryPerformanceCounter(&start);
+        for (launch_i = 0; launch_i < LAUNCH_COUNT; launch_i++) {
+            result = bsearch(&key, arr, size, sizeof(double), compareDouble);
+        }
+        QueryPerformanceCounter(&end);
+
+        assert(result == NULL);
+
+        elapsed_ticks = end.QuadPart - start.QuadPart;
+        avg_cpu_time_ns = ((double)elapsed_ticks * 1000000000.0 / g_performanceFrequency.QuadPart) / LAUNCH_COUNT;
+        printf("test %d elements: %.2f ns.\n", size, avg_cpu_time_ns);
+        pIMem->pVTbl->Free(pIMem, arr);
+    }
+
+    printf("stdlib bsearch DOUBLE tests completed\n\n");
+}
+
+void TestBsearchLongDoubleStdLib(IEcoMemoryAllocator1* pIMem) {
+    long double* arr;
+    int size_i;
+    int launch_i;
+    int size;
+    long double key = -1.0L;
+    LARGE_INTEGER start, end;
+    long long elapsed_ticks;
+    double avg_cpu_time_ns;
+    void* result;
+
+    printf("stdlib bsearch LONG DOUBLE tests started\n");
+
+    for (size_i = 0; size_i < SIZES_COUNT; size_i++) {
+        size = g_testSizes[size_i];
+        arr = GenerateLongDoubleArray(pIMem, size);
+
+        QueryPerformanceCounter(&start);
+        for (launch_i = 0; launch_i < LAUNCH_COUNT; launch_i++) {
+            result = bsearch(&key, arr, size, sizeof(long double), compareLongDouble);
+        }
+        QueryPerformanceCounter(&end);
+
+        assert(result == NULL);
+
+        elapsed_ticks = end.QuadPart - start.QuadPart;
+        avg_cpu_time_ns = ((double)elapsed_ticks * 1000000000.0 / g_performanceFrequency.QuadPart) / LAUNCH_COUNT;
+        printf("test %d elements: %.2f ns.\n", size, avg_cpu_time_ns);
+        pIMem->pVTbl->Free(pIMem, arr);
+    }
+
+    printf("stdlib bsearch LONG DOUBLE tests completed\n\n");
+}
+
 
 /*
  *
@@ -350,6 +568,11 @@ int16_t EcoMain(IEcoUnknown* pIUnk) {
     TestBsearchDouble(pIEcoLab1, pIMem);
     TestBsearchLongDouble(pIEcoLab1, pIMem);
 
+    TestBsearchIntStdLib(pIMem);
+    TestBsearchLongLongStdLib(pIMem);
+    TestBsearchFloatStdLib(pIMem);
+    TestBsearchDoubleStdLib(pIMem);
+    TestBsearchLongDoubleStdLib(pIMem);
 Release:
 
     /* Освобождение интерфейса для работы с интерфейсной шиной */
