@@ -1,7 +1,0 @@
-﻿  CEcoLab1Factory.c
-  CEcoLab1.c
-  Generating Code...
-C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\Microsoft.CppBuild.targets(990,5): warning MSB8012: TargetPath(D:\HSE\OSDesign\Eco.Lab1\AssemblyFiles\Windows\VisualStudio_10\Eco.Lab1\DynamicDebug\1F5DF16EE1BF43B999A434ED38FE8F3A.dll) does not match the Linker's OutputFile property value (D:\HSE\OSDesign\Eco.Lab1\BuildFiles\Windows\x86\DynamicDebug\1F5DF16EE1BF43B999A434ED38FE8F3A.dll). This may cause your project to build incorrectly. To correct this, please make sure that $(OutDir), $(TargetName) and $(TargetExt) property values match the value specified in %(Link.OutputFile).
-  LINK : ..\..\..\BuildFiles\Windows\x86\DynamicDebug\1F5DF16EE1BF43B999A434ED38FE8F3A.dll not found or not built by the last incremental link; performing full link
-     Creating library D:\HSE\OSDesign\Eco.Lab1\AssemblyFiles\Windows\VisualStudio_10\Eco.Lab1\DynamicDebug\1F5DF16EE1BF43B999A434ED38FE8F3A.lib and object D:\HSE\OSDesign\Eco.Lab1\AssemblyFiles\Windows\VisualStudio_10\Eco.Lab1\DynamicDebug\1F5DF16EE1BF43B999A434ED38FE8F3A.exp
-  Eco.Lab1.vcxproj -> D:\HSE\OSDesign\Eco.Lab1\AssemblyFiles\Windows\VisualStudio_10\Eco.Lab1\DynamicDebug\1F5DF16EE1BF43B999A434ED38FE8F3A.dll
