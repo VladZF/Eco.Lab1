@@ -23,6 +23,12 @@
 #include "IdEcoInterfaceBus1.h"
 #include "IdEcoFileSystemManagement1.h"
 #include "IdEcoLab1.h"
+#include "IdEcoCalculatorA.h"
+#include "IdEcoCalculatorB.h"
+#include "IdEcoCalculatorD.h"
+#include "IdEcoCalculatorE.h"
+#include "IEcoCalculatorX.h"
+#include "IEcoCalculatorY.h"
 
 /* Подключаем заголовочный файл для QueryPerformanceCounter */
 #include <windows.h>
@@ -515,6 +521,12 @@ int16_t EcoMain(IEcoUnknown* pIUnk) {
     IEcoMemoryAllocator1* pIMem = 0;
     /* Указатель на тестируемый интерфейс */
     IEcoLab1* pIEcoLab1 = 0;
+    /* Указатель на интерфейс X */
+    IEcoCalculatorX* pIX = 0;
+    /* Указатель на интерфейс Y */
+    IEcoCalculatorY* pIY = 0;
+    /* Результат математических операций */
+    int32_t comp_result = 0;
 
     /* Получаем частоту счетчика производительности ОДИН РАЗ в начале */
     if (!QueryPerformanceFrequency(&g_performanceFrequency)) {
@@ -544,6 +556,26 @@ int16_t EcoMain(IEcoUnknown* pIUnk) {
         /* Освобождение в случае ошибки */
         goto Release;
     }
+    result = pIBus->pVTbl->RegisterComponent(pIBus, &CID_EcoCalculatorB, (IEcoUnknown*)GetIEcoComponentFactoryPtr_AE202E543CE54550899603BD70C62565);
+    if (result != 0) {
+        /* Освобождение в случае ошибки */
+        goto Release;
+    }
+    result = pIBus->pVTbl->RegisterComponent(pIBus, &CID_EcoCalculatorA, (IEcoUnknown*)GetIEcoComponentFactoryPtr_4828F6552E4540E78121EBD220DC360E);
+    if (result != 0) {
+        /* Освобождение в случае ошибки */
+        goto Release;
+    }
+    result = pIBus->pVTbl->RegisterComponent(pIBus, &CID_EcoCalculatorD, (IEcoUnknown*)GetIEcoComponentFactoryPtr_3A8E44677E82475CB4A3719ED8397E61);
+    if (result != 0) {
+        /* Освобождение в случае ошибки */
+        goto Release;
+    }
+    result = pIBus->pVTbl->RegisterComponent(pIBus, &CID_EcoCalculatorE, (IEcoUnknown*)GetIEcoComponentFactoryPtr_872FEF1DE3314B87AD44D1E7C232C2F0);
+    if (result != 0) {
+        /* Освобождение в случае ошибки */
+        goto Release;
+    }
 #endif
     /* Получение интерфейса управления памятью */
     result = pIBus->pVTbl->QueryComponent(pIBus, &CID_EcoMemoryManager1, 0, &IID_IEcoMemoryAllocator1, (void**)&pIMem);
@@ -561,18 +593,126 @@ int16_t EcoMain(IEcoUnknown* pIUnk) {
         goto Release;
     }
 
-    /* Тестирование функций */
+    result = pIEcoLab1->pVTbl->QueryInterface(pIEcoLab1, &IID_IEcoCalculatorX, (void**)&pIX);
+    if (result != 0 || pIX == 0) {
+        goto Release;
+    }
+
+    result = pIEcoLab1->pVTbl->QueryInterface(pIEcoLab1, &IID_IEcoCalculatorY, (void**)&pIY);
+    if (result != 0 || pIY == 0) {
+        goto Release;
+    }
+
+    printf("Bsearch tests:\n\n");
+
     TestBsearchInt(pIEcoLab1, pIMem);
     TestBsearchLongLong(pIEcoLab1, pIMem);
     TestBsearchFloat(pIEcoLab1, pIMem);
     TestBsearchDouble(pIEcoLab1, pIMem);
     TestBsearchLongDouble(pIEcoLab1, pIMem);
-
     TestBsearchIntStdLib(pIMem);
     TestBsearchLongLongStdLib(pIMem);
     TestBsearchFloatStdLib(pIMem);
     TestBsearchDoubleStdLib(pIMem);
     TestBsearchLongDoubleStdLib(pIMem);
+
+
+    printf("\nAriphmetic operations tests:\n\n");
+
+    comp_result = pIX->pVTbl->Addition(pIX, 1, 4);
+    if (comp_result == 5) {
+        printf("IEcoCalculatorX Addition [SUCCESS]\n");
+    } else if (comp_result == INT32_MIN) {
+        printf("IEcoCalculatorX Addition [POINTER ERROR]\n");
+    }
+    else {
+        printf("IEcoCalculatorX Addition [WRONG ANSWER]\n");
+    }
+    
+    comp_result = pIX->pVTbl->Subtraction(pIX, 10, 3);
+    if (comp_result == 7) {
+        printf("IEcoCalculatorX Subtraction [SUCCESS]\n");
+    }
+    else if (comp_result == INT32_MIN) {
+        printf("IEcoCalculatorX Subtraction [POINTER ERROR]\n");
+    }
+    else {
+        printf("IEcoCalculatorX Subtraction [WRONG ANSWER]\n");
+    }
+
+    comp_result = pIY->pVTbl->Multiplication(pIY, 3, 5);
+    if (comp_result == 15) {
+        printf("IEcoCalculatorY Multiplication [SUCCESS]\n");
+    }
+    else if (comp_result == INT32_MIN) {
+        printf("IEcoCalculatorY Multiplication [POINTER ERROR]\n");
+    }
+    else {
+        printf("IEcoCalculatorY Multiplication [WRONG ANSWER]\n");
+    }
+
+    comp_result = pIY->pVTbl->Division(pIY, 41, 5);
+    if (comp_result == 8) {
+        printf("IEcoCalculatorY Division [SUCCESS]\n");
+    }
+    else if (comp_result == INT32_MIN) {
+        printf("IEcoCalculatorY Division [POINTER ERROR | ZERO DIVISION]\n");
+    }
+    else {
+        printf("IEcoCalculatorY Division [WRONG ANSWER]\n");
+    }
+
+    pIX->pVTbl->Release(pIX);
+    pIY->pVTbl->Release(pIY);
+
+    printf("\nInterface accessibility tests:\n\n");
+
+    result = pIEcoLab1->pVTbl->QueryInterface(pIEcoLab1, &IID_IEcoCalculatorX, (void**)&pIX);
+    if (result == 0) {
+        pIX->pVTbl->Release(pIX);
+        printf("IEcoLab1 -> IX [Success]\n");
+    }
+    result = pIEcoLab1->pVTbl->QueryInterface(pIEcoLab1, &IID_IEcoCalculatorY, (void**)&pIY);
+    if (result == 0) {
+        pIY->pVTbl->Release(pIY);
+        printf("IEcoLab1 -> IY [Success]\n");
+    }
+    result = pIEcoLab1->pVTbl->QueryInterface(pIEcoLab1, &IID_IEcoLab1, (void**)&pIEcoLab1);
+    if (result == 0) {
+        pIEcoLab1->pVTbl->Release(pIEcoLab1);
+        printf("IEcoLab1 -> IEcoLab1 [Success]\n");
+    }
+    result = pIX->pVTbl->QueryInterface(pIX, &IID_IEcoCalculatorY, (void**)&pIY);
+    if (result == 0) {
+        pIY->pVTbl->Release(pIY);
+        printf("IX -> IY [Success]\n");
+    }
+    result = pIX->pVTbl->QueryInterface(pIX, &IID_IEcoLab1, (void**)&pIEcoLab1);
+    if (result == 0) {
+        pIEcoLab1->pVTbl->Release(pIEcoLab1);
+        printf("IX -> IEcoLab1 [Success]\n");
+    }
+    result = pIX->pVTbl->QueryInterface(pIX, &IID_IEcoCalculatorX, (void**)&pIX);
+    if (result == 0) {
+        pIX->pVTbl->Release(pIX);
+        printf("IX -> IX [Success]\n");
+    }
+    result = pIY->pVTbl->QueryInterface(pIY, &IID_IEcoCalculatorX, (void**)&pIX);
+    if (result == 0) {
+        pIX->pVTbl->Release(pIX);
+        printf("IY -> IX [Success]\n");
+    }
+    result = pIY->pVTbl->QueryInterface(pIY, &IID_IEcoCalculatorY, (void**)&pIY);
+    if (result == 0) {
+        pIY->pVTbl->Release(pIY);
+        printf("IY -> IY [Success]\n");
+    }
+    result = pIY->pVTbl->QueryInterface(pIY, &IID_IEcoLab1, (void**)&pIEcoLab1);
+    if (result == 0) {
+        pIEcoLab1->pVTbl->Release(pIEcoLab1);
+        printf("IY -> IEcoLab1 [Success]\n");
+    }
+
 Release:
 
     /* Освобождение интерфейса для работы с интерфейсной шиной */
