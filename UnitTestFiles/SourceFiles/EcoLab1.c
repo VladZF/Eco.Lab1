@@ -621,45 +621,45 @@ int16_t EcoMain(IEcoUnknown* pIUnk) {
 
     comp_result = pIX->pVTbl->Addition(pIX, 1, 4);
     if (comp_result == 5) {
-        printf("IEcoCalculatorX Addition [SUCCESS]\n");
+        printf("IEcoCalculatorX Addition: 1 + 4 = %d [SUCCESS]\n", comp_result);
     } else if (comp_result == INT32_MIN) {
-        printf("IEcoCalculatorX Addition [POINTER ERROR]\n");
+        printf("IEcoCalculatorX Addition 1 + 4 = %d [POINTER ERROR]\n", comp_result);
     }
     else {
-        printf("IEcoCalculatorX Addition [WRONG ANSWER]\n");
+        printf("IEcoCalculatorX Addition 1 + 4 = %d [WRONG ANSWER]\n", comp_result);
     }
     
     comp_result = pIX->pVTbl->Subtraction(pIX, 10, 3);
     if (comp_result == 7) {
-        printf("IEcoCalculatorX Subtraction [SUCCESS]\n");
+        printf("IEcoCalculatorX Subtraction: 10 - 3 = %d [SUCCESS]\n", comp_result);
     }
     else if (comp_result == INT32_MIN) {
-        printf("IEcoCalculatorX Subtraction [POINTER ERROR]\n");
+        printf("IEcoCalculatorX Subtraction: 10 - 3 = %d [POINTER ERROR]\n", comp_result);
     }
     else {
-        printf("IEcoCalculatorX Subtraction [WRONG ANSWER]\n");
+        printf("IEcoCalculatorX Subtraction: 10 - 3 = %d [WRONG ANSWER]\n", comp_result);
     }
 
     comp_result = pIY->pVTbl->Multiplication(pIY, 3, 5);
     if (comp_result == 15) {
-        printf("IEcoCalculatorY Multiplication [SUCCESS]\n");
+        printf("IEcoCalculatorY Multiplication: 3 * 5 = %d [SUCCESS]\n", comp_result);
     }
     else if (comp_result == INT32_MIN) {
-        printf("IEcoCalculatorY Multiplication [POINTER ERROR]\n");
+        printf("IEcoCalculatorY Multiplication: 3 * 5 = %d [POINTER ERROR]\n", comp_result);
     }
     else {
-        printf("IEcoCalculatorY Multiplication [WRONG ANSWER]\n");
+        printf("IEcoCalculatorY Multiplication: 3 * 5 = %d [WRONG ANSWER]\n", comp_result);
     }
 
     comp_result = pIY->pVTbl->Division(pIY, 41, 5);
     if (comp_result == 8) {
-        printf("IEcoCalculatorY Division [SUCCESS]\n");
+        printf("IEcoCalculatorY Division: 41 / 5 = %d [SUCCESS]\n", comp_result);
     }
     else if (comp_result == INT32_MIN) {
-        printf("IEcoCalculatorY Division [POINTER ERROR | ZERO DIVISION]\n");
+        printf("IEcoCalculatorY Division: 41 / 5 = %d [POINTER ERROR | ZERO DIVISION]\n", comp_result);
     }
     else {
-        printf("IEcoCalculatorY Division [WRONG ANSWER]\n");
+        printf("IEcoCalculatorY Division: 41 / 5 = %d [WRONG ANSWER]\n", comp_result);
     }
 
     pIX->pVTbl->Release(pIX);
