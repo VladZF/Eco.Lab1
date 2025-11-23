@@ -29,6 +29,9 @@
 #include "IdEcoCalculatorE.h"
 #include "IEcoCalculatorX.h"
 #include "IEcoCalculatorY.h"
+#include "CEcoLab1Sink.h"
+#include "CEcoLab1Sink2.h"
+#include "IEcoConnectionPointContainer.h"
 
 /* Подключаем заголовочный файл для QueryPerformanceCounter */
 #include <windows.h>
@@ -527,6 +530,20 @@ int16_t EcoMain(IEcoUnknown* pIUnk) {
     IEcoCalculatorY* pIY = 0;
     /* Результат математических операций */
     int32_t comp_result = 0;
+    /* Указатель на интерфейс контейнера точек подключения */
+    IEcoConnectionPointContainer* pICPC = 0;
+    /* Указатель на интерфейс точки подключения */
+    IEcoConnectionPoint* pICP = 0;
+    /* Указатель на обратный интерфейс */
+    IEcoLab1Events* pIEcoLab1Sink = 0;
+    IEcoLab1Events* pIEcoLab1Sink2 = 0;
+    IEcoUnknown* pISinkUnk = 0;
+    uint32_t cAdvise = 0;
+    uint32_t cAdvise2 = 0;
+
+    int* intArr = 0;
+
+    int resultIndex = 0;
 
     /* Получаем частоту счетчика производительности ОДИН РАЗ в начале */
     if (!QueryPerformanceFrequency(&g_performanceFrequency)) {
@@ -593,6 +610,84 @@ int16_t EcoMain(IEcoUnknown* pIUnk) {
         goto Release;
     }
 
+    /* Проверка поддержки подключений обратного интерфейса */
+    result = pIEcoLab1->pVTbl->QueryInterface(pIEcoLab1, &IID_IEcoConnectionPointContainer, (void**)&pICPC);
+    if (result != 0 || pICPC == 0) {
+        /* Освобождение интерфейсов в случае ошибки */
+        goto Release;
+    }
+
+    /* Запрос на получения интерфейса точки подключения */
+    result = pICPC->pVTbl->FindConnectionPoint(pICPC, &IID_IEcoLab1Events, &pICP);
+    if (result != 0 || pICP == 0) {
+        /* Освобождение интерфейсов в случае ошибки */
+        goto Release;
+    }
+
+    /* Освобождение интерфейса */
+    pICPC->pVTbl->Release(pICPC);
+
+    /* Создание экземпляра обратного интерфейса */
+    result = createCEcoLab1Sink(pIMem, (IEcoLab1Events**)&pIEcoLab1Sink);
+
+    if (pIEcoLab1Sink != 0) {
+        result = pIEcoLab1Sink->pVTbl->QueryInterface(pIEcoLab1Sink, &IID_IEcoUnknown, (void**)&pISinkUnk);
+        if (result != 0 || pISinkUnk == 0) {
+            /* Освобождение интерфейсов в случае ошибки */
+            goto Release;
+        }
+        /* Подключение */
+        result = pICP->pVTbl->Advise(pICP, pISinkUnk, &cAdvise);
+        /* Проверка */
+        if (result == 0 && cAdvise == 1) {
+            /* Сюда можно добавить код */
+        }
+        /* Освобождение интерфейса */
+        pISinkUnk->pVTbl->Release(pISinkUnk);
+    }
+
+    result = createCEcoLab1Sink2(pIMem, (IEcoLab1Events**)&pIEcoLab1Sink2);
+
+    if (pIEcoLab1Sink2 != 0) {
+        result = pIEcoLab1Sink2->pVTbl->QueryInterface(pIEcoLab1Sink2, &IID_IEcoUnknown, (void**)&pISinkUnk);
+        if (result != 0 || pISinkUnk == 0) {
+            /* Освобождение интерфейсов в случае ошибки */
+            goto Release;
+        }
+        /* Подключение */
+        result = pICP->pVTbl->Advise(pICP, pISinkUnk, &cAdvise2);
+        /* Проверка */
+        if (result == 0 && cAdvise == 1) {
+            /* Сюда можно добавить код */
+        }
+        /* Освобождение интерфейса */
+        pISinkUnk->pVTbl->Release(pISinkUnk);
+    }
+
+
+    intArr = GenerateIntArray(pIMem, 20);
+
+    printf("TEST 1: FIND EXISTING ELEMENT\n\n");
+    pIEcoLab1->pVTbl->Bsearchi(pIEcoLab1, intArr, 20, 5, &resultIndex);
+    printf("\n\n\TEST 2: FIND NON-EXISTING ELEMENT\n\n");
+    pIEcoLab1->pVTbl->Bsearchi(pIEcoLab1, intArr, 20, -1, &resultIndex);
+
+    pIMem->pVTbl->Free(pIMem, intArr);
+
+    if (pIEcoLab1Sink != 0) {
+        result = pICP->pVTbl->Unadvise(pICP, cAdvise);
+        pIEcoLab1Sink->pVTbl->Release(pIEcoLab1Sink);
+    }
+
+    if (pIEcoLab1Sink2 != 0) {
+        result = pICP->pVTbl->Unadvise(pICP, cAdvise2);
+        pIEcoLab1Sink2->pVTbl->Release(pIEcoLab1Sink2);
+    }
+
+    
+    pICP->pVTbl->Release(pICP);
+    
+    /*
     result = pIEcoLab1->pVTbl->QueryInterface(pIEcoLab1, &IID_IEcoCalculatorX, (void**)&pIX);
     if (result != 0 || pIX == 0) {
         goto Release;
@@ -712,6 +807,7 @@ int16_t EcoMain(IEcoUnknown* pIUnk) {
         pIEcoLab1->pVTbl->Release(pIEcoLab1);
         printf("IY -> IEcoLab1 [Success]\n");
     }
+    */
 
 Release:
 

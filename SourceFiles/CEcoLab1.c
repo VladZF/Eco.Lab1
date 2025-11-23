@@ -27,18 +27,8 @@
 #include "IdEcoCalculatorE.h"
 #include "IEcoCalculatorX.h"
 #include "IEcoCalculatorY.h"
+#include "IEcoLab1Events.h"
 
-/*
- *
- * <сводка>
- *   Функция QueryInterface
- * </сводка>
- *
- * <описание>
- *   Функция QueryInterface для интерфейса IEcoLab1
- * </описание>
- *
- */
 static int16_t ECOCALLMETHOD CEcoLab1_QueryInterface(/* in */ IEcoLab1Ptr_t me, /* in */ const UGUID* riid, /* out */ void** ppv) {
     CEcoLab1* pCMe = (CEcoLab1*)me;
     /* Проверка указателей */
@@ -49,6 +39,10 @@ static int16_t ECOCALLMETHOD CEcoLab1_QueryInterface(/* in */ IEcoLab1Ptr_t me, 
     /* Проверка и получение запрошенного интерфейса */
     if ( IsEqualUGUID(riid, &IID_IEcoLab1) ) {
         *ppv = &pCMe->m_pVTblIEcoLab1;
+        pCMe->m_pVTblIEcoLab1->AddRef((IEcoLab1*)pCMe);
+    }
+    else if (IsEqualUGUID(riid, &IID_IEcoConnectionPointContainer)) {
+        *ppv = &pCMe->m_pVTblICPC;
         pCMe->m_pVTblIEcoLab1->AddRef((IEcoLab1*)pCMe);
     }
     else if (IsEqualUGUID(riid, &IID_IEcoCalculatorX)) {
@@ -86,6 +80,10 @@ static int16_t ECOCALLMETHOD CEcoLab1_X_QueryInterface(/* in */ IEcoCalculatorXP
     /* Проверка и получение запрошенного интерфейса */
     if (IsEqualUGUID(riid, &IID_IEcoLab1)) {
         *ppv = &pCMe->m_pVTblIEcoLab1;
+        pCMe->m_pVTblIEcoLab1->AddRef((IEcoLab1*)pCMe);
+    }
+    else if (IsEqualUGUID(riid, &IID_IEcoConnectionPointContainer)) {
+        *ppv = &pCMe->m_pVTblICPC;
         pCMe->m_pVTblIEcoLab1->AddRef((IEcoLab1*)pCMe);
     }
     else if (IsEqualUGUID(riid, &IID_IEcoCalculatorX)) {
@@ -129,6 +127,10 @@ static int16_t ECOCALLMETHOD CEcoLab1_Y_QueryInterface(/* in */ IEcoCalculatorYP
         *ppv = &pCMe->m_pVTblIEcoLab1;
         pCMe->m_pVTblIEcoLab1->AddRef((IEcoLab1*)pCMe);
     }
+    else if (IsEqualUGUID(riid, &IID_IEcoConnectionPointContainer)) {
+        *ppv = &pCMe->m_pVTblICPC;
+        pCMe->m_pVTblIEcoLab1->AddRef((IEcoLab1*)pCMe);
+    }
     else if (IsEqualUGUID(riid, &IID_IEcoCalculatorY)) {
         *ppv = &pCMe->m_pVTblIY;
         pCMe->m_pVTblIEcoLab1->AddRef((IEcoLab1*)pCMe);
@@ -153,17 +155,6 @@ static int16_t ECOCALLMETHOD CEcoLab1_Y_QueryInterface(/* in */ IEcoCalculatorYP
     return ERR_ECO_SUCCESES;
 }
 
-/*
- *
- * <сводка>
- *   Функция AddRef
- * </сводка>
- *
- * <описание>
- *   Функция AddRef для интерфейса IEcoLab1
- * </описание>
- *
- */
 static uint32_t ECOCALLMETHOD CEcoLab1_AddRef(/* in */ IEcoLab1Ptr_t me) {
     CEcoLab1* pCMe = (CEcoLab1*)me;
 
@@ -197,17 +188,6 @@ static uint32_t ECOCALLMETHOD CEcoLab1_Y_AddRef(/* in */ IEcoCalculatorYPtr_t me
     return ++pCMe->m_cRef;
 }
 
-/*
- *
- * <сводка>
- *   Функция Release
- * </сводка>
- *
- * <описание>
- *   Функция Release для интерфейса IEcoLab1
- * </описание>
- *
- */
 static uint32_t ECOCALLMETHOD CEcoLab1_Release(/* in */ IEcoLab1Ptr_t me) {
     CEcoLab1* pCMe = (CEcoLab1*)me;
 
@@ -265,17 +245,150 @@ static uint32_t ECOCALLMETHOD CEcoLab1_Y_Release(/* in */ IEcoCalculatorYPtr_t m
     return pCMe->m_cRef;
 }
 
-/*
- *
- * <сводка>
- *   Функция MyFunction
- * </сводка>
- *
- * <описание>
- *   Функция
- * </описание>
- *
- */
+static uint32_t ECOCALLMETHOD CEcoLab1_Fire_OnElementSelectionInt(IEcoLab1* me, const int* arr, const int n, const int index) {
+    CEcoLab1* pCMe = (CEcoLab1*)me;
+    int16_t result = 0;
+    uint32_t count = 0;
+    IEcoEnumConnections* pEnum = 0;
+    IEcoLab1Events* pIEvents = 0;
+    EcoConnectionData cd;
+
+    if (me == 0) {
+        return -1;
+    }
+
+    if (pCMe->m_pISinkCP != 0) {
+        result = ((IEcoConnectionPoint*)pCMe->m_pISinkCP)->pVTbl->EnumConnections((IEcoConnectionPoint*)pCMe->m_pISinkCP, &pEnum);
+        if ((result == 0) && (pEnum != 0)) {
+            while (pEnum->pVTbl->Next(pEnum, 1, &cd, 0) == 0) {
+                result = cd.pUnk->pVTbl->QueryInterface(cd.pUnk, &IID_IEcoLab1Events, (void**)&pIEvents);
+                if ((result == 0) && (pIEvents != 0)) {
+                    result = pIEvents->pVTbl->OnElementSelectionInt(pIEvents, arr, n, index);
+                    pIEvents->pVTbl->Release(pIEvents);
+                }
+                cd.pUnk->pVTbl->Release(cd.pUnk);
+            }
+            pEnum->pVTbl->Release(pEnum);
+        }
+    }
+    return result;
+}
+
+static uint32_t ECOCALLMETHOD CEcoLab1_Fire_OnElementFoundInt(IEcoLab1* me, const int index, const int element) {
+    CEcoLab1* pCMe = (CEcoLab1*)me;
+    int16_t result = 0;
+    uint32_t count = 0;
+    IEcoEnumConnections* pEnum = 0;
+    IEcoLab1Events* pIEvents = 0;
+    EcoConnectionData cd;
+
+    if (me == 0) {
+        return -1;
+    }
+
+    if (pCMe->m_pISinkCP != 0) {
+        result = ((IEcoConnectionPoint*)pCMe->m_pISinkCP)->pVTbl->EnumConnections((IEcoConnectionPoint*)pCMe->m_pISinkCP, &pEnum);
+        if ((result == 0) && (pEnum != 0)) {
+            while (pEnum->pVTbl->Next(pEnum, 1, &cd, 0) == 0) {
+                result = cd.pUnk->pVTbl->QueryInterface(cd.pUnk, &IID_IEcoLab1Events, (void**)&pIEvents);
+                if ((result == 0) && (pIEvents != 0)) {
+                    result = pIEvents->pVTbl->OnElementFoundInt(pIEvents, index, element);
+                    pIEvents->pVTbl->Release(pIEvents);
+                }
+                cd.pUnk->pVTbl->Release(cd.pUnk);
+            }
+            pEnum->pVTbl->Release(pEnum);
+        }
+    }
+    return result;
+}
+
+static uint32_t ECOCALLMETHOD CEcoLab1_Fire_OnCallBSearchInt(IEcoLab1* me, const int* arr, /* in */ const int n, /* in */ const int target) {
+    CEcoLab1* pCMe = (CEcoLab1*)me;
+    int16_t result = 0;
+    uint32_t count = 0;
+    IEcoEnumConnections* pEnum = 0;
+    IEcoLab1Events* pIEvents = 0;
+    EcoConnectionData cd;
+
+    if (me == 0) {
+        return -1;
+    }
+
+    if (pCMe->m_pISinkCP != 0) {
+        result = ((IEcoConnectionPoint*)pCMe->m_pISinkCP)->pVTbl->EnumConnections((IEcoConnectionPoint*)pCMe->m_pISinkCP, &pEnum);
+        if ((result == 0) && (pEnum != 0)) {
+            while (pEnum->pVTbl->Next(pEnum, 1, &cd, 0) == 0) {
+                result = cd.pUnk->pVTbl->QueryInterface(cd.pUnk, &IID_IEcoLab1Events, (void**)&pIEvents);
+                if ((result == 0) && (pIEvents != 0)) {
+                    result = pIEvents->pVTbl->OnCallBSearchInt(pIEvents, arr, n, target);
+                    pIEvents->pVTbl->Release(pIEvents);
+                }
+                cd.pUnk->pVTbl->Release(cd.pUnk);
+            }
+            pEnum->pVTbl->Release(pEnum);
+        }
+    }
+    return result;
+}
+
+static uint32_t ECOCALLMETHOD CEcoLab1_Fire_OnElementNotFoundInt(IEcoLab1* me, const int index, const int element, const int target) {
+    CEcoLab1* pCMe = (CEcoLab1*)me;
+    int16_t result = 0;
+    uint32_t count = 0;
+    IEcoEnumConnections* pEnum = 0;
+    IEcoLab1Events* pIEvents = 0;
+    EcoConnectionData cd;
+
+    if (me == 0) {
+        return -1;
+    }
+
+    if (pCMe->m_pISinkCP != 0) {
+        result = ((IEcoConnectionPoint*)pCMe->m_pISinkCP)->pVTbl->EnumConnections((IEcoConnectionPoint*)pCMe->m_pISinkCP, &pEnum);
+        if ((result == 0) && (pEnum != 0)) {
+            while (pEnum->pVTbl->Next(pEnum, 1, &cd, 0) == 0) {
+                result = cd.pUnk->pVTbl->QueryInterface(cd.pUnk, &IID_IEcoLab1Events, (void**)&pIEvents);
+                if ((result == 0) && (pIEvents != 0)) {
+                    result = pIEvents->pVTbl->OnElementNotFoundInt(pIEvents, index, element, target);
+                    pIEvents->pVTbl->Release(pIEvents);
+                }
+                cd.pUnk->pVTbl->Release(cd.pUnk);
+            }
+            pEnum->pVTbl->Release(pEnum);
+        }
+    }
+    return result;
+}
+
+static uint32_t ECOCALLMETHOD CEcoLab1_Fire_OnTargetNotFountInArrayInt(IEcoLab1* me, const int* arr, const int n, const int target) {
+    CEcoLab1* pCMe = (CEcoLab1*)me;
+    int16_t result = 0;
+    uint32_t count = 0;
+    IEcoEnumConnections* pEnum = 0;
+    IEcoLab1Events* pIEvents = 0;
+    EcoConnectionData cd;
+
+    if (me == 0) {
+        return -1;
+    }
+
+    if (pCMe->m_pISinkCP != 0) {
+        result = ((IEcoConnectionPoint*)pCMe->m_pISinkCP)->pVTbl->EnumConnections((IEcoConnectionPoint*)pCMe->m_pISinkCP, &pEnum);
+        if ((result == 0) && (pEnum != 0)) {
+            while (pEnum->pVTbl->Next(pEnum, 1, &cd, 0) == 0) {
+                result = cd.pUnk->pVTbl->QueryInterface(cd.pUnk, &IID_IEcoLab1Events, (void**)&pIEvents);
+                if ((result == 0) && (pIEvents != 0)) {
+                    result = pIEvents->pVTbl->OnTargetNotFountInArrayInt(pIEvents, arr, n, target);
+                    pIEvents->pVTbl->Release(pIEvents);
+                }
+                cd.pUnk->pVTbl->Release(cd.pUnk);
+            }
+            pEnum->pVTbl->Release(pEnum);
+        }
+    }
+    return result;
+}
 
 static int16_t ECOCALLMETHOD CEcoLab1_Bsearchi(/* in */ IEcoLab1Ptr_t me, /* in */ const int* arr, /* in */ const int n, /* in */ const int target, /* out */ int* index) {
 	CEcoLab1* pCMe = (CEcoLab1*)me;
@@ -289,9 +402,13 @@ static int16_t ECOCALLMETHOD CEcoLab1_Bsearchi(/* in */ IEcoLab1Ptr_t me, /* in 
         return ERR_ECO_POINTER;
     }
 
+    CEcoLab1_Fire_OnCallBSearchInt((IEcoLab1*)me, arr, n, target);
+
 	while (l <= r) {
 		m = (l + r) / 2;
-		if (target == arr[m]) {
+        CEcoLab1_Fire_OnElementSelectionInt((IEcoLab1*)me, arr, n, m);
+        if (target == arr[m]) {
+            CEcoLab1_Fire_OnElementFoundInt((IEcoLab1*)me, m, arr[m]);
 			*index = m;
 			break;
 		} else if (target < arr[m]) {
@@ -299,7 +416,11 @@ static int16_t ECOCALLMETHOD CEcoLab1_Bsearchi(/* in */ IEcoLab1Ptr_t me, /* in 
 		} else {
 			l = m + 1;
 		}
+        CEcoLab1_Fire_OnElementNotFoundInt((IEcoLab1*)me, m, arr[m], target);
 	}
+
+    if (*index == -1)
+        CEcoLab1_Fire_OnTargetNotFountInArrayInt((IEcoLab1*)me, arr, n, target);
 
 	return ERR_ECO_SUCCESES;
 }
@@ -478,17 +599,101 @@ static int32_t ECOCALLMETHOD CEcoLab1_Y_Division(IEcoCalculatorYPtr_t me, int32_
 
     return result;
 }
-/*
- *
- * <сводка>
- *   Функция Init
- * </сводка>
- *
- * <описание>
- *   Функция инициализации экземпляра
- * </описание>
- *
- */
+
+int16_t ECOCALLMETHOD CEcoLab1_IEcoConnectionPointContainer_QueryInterface(/* in */ struct IEcoConnectionPointContainer* me, /* in */ const UGUID* riid, /* out */ void** ppv) {
+    CEcoLab1* pCMe = (CEcoLab1*)((uint64_t)me - (uint64_t)3 * sizeof(struct IEcoUnknown*));
+
+    if (me == 0 || ppv == 0) {
+        return -1;
+    }
+
+    /* Проверка и получение запрошенного интерфейса */
+    if (IsEqualUGUID(riid, &IID_IEcoLab1)) {
+        *ppv = &pCMe->m_pVTblIEcoLab1;
+        pCMe->m_pVTblIEcoLab1->AddRef((IEcoLab1*)pCMe);
+    }
+    else if (IsEqualUGUID(riid, &IID_IEcoConnectionPointContainer)) {
+        *ppv = &pCMe->m_pVTblICPC;
+        pCMe->m_pVTblIEcoLab1->AddRef((IEcoLab1*)pCMe);
+    }
+    else if (IsEqualUGUID(riid, &IID_IEcoUnknown)) {
+        *ppv = &pCMe->m_pVTblIEcoLab1;
+        pCMe->m_pVTblIEcoLab1->AddRef((IEcoLab1*)pCMe);
+    }
+    else {
+        *ppv = 0;
+        return -1;
+    }
+
+    return 0;
+}
+
+uint32_t ECOCALLMETHOD CEcoLab1_IEcoConnectionPointContainer_AddRef(/* in */ struct IEcoConnectionPointContainer* me) {
+    CEcoLab1* pCMe = (CEcoLab1*)((uint64_t)me - (uint64_t)3 * sizeof(struct IEcoUnknown*));
+
+    if (me == 0) {
+        return -1;
+    }
+
+    return ++pCMe->m_cRef;
+}
+
+uint32_t ECOCALLMETHOD CEcoLab1_IEcoConnectionPointContainer_Release(/* in */ struct IEcoConnectionPointContainer* me) {
+    CEcoLab1* pCMe = (CEcoLab1*)((uint64_t)me - (uint64_t)3 * sizeof(struct IEcoUnknown*));
+
+    if (me == 0) {
+        return -1;
+    }
+
+    /* Уменьшение счетчика ссылок на компонент */
+    --pCMe->m_cRef;
+
+    /* В случае обнуления счетчика, освобождение данных экземпляра */
+    if (pCMe->m_cRef == 0) {
+        deleteCEcoLab1((IEcoLab1*)pCMe);
+        return 0;
+    }
+    return pCMe->m_cRef;
+}
+
+int16_t ECOCALLMETHOD CEcoLab1_IEcoConnectionPointContainer_EnumConnectionPoints(/* in */ struct IEcoConnectionPointContainer* me, /* out */ struct IEcoEnumConnectionPoints** ppEnum) {
+    CEcoLab1* pCMe = (CEcoLab1*)((uint64_t)me - (uint64_t)3 * sizeof(struct IEcoUnknown*));
+    int16_t result = 0;
+
+    if (me == 0 || ppEnum == 0) {
+        return -1;
+    }
+
+    result = createCEcoLab1EnumConnectionPoints((IEcoUnknown*)pCMe->m_pISys, &pCMe->m_pISinkCP->m_pVTblICP, ppEnum);
+
+    return result;
+}
+
+int16_t ECOCALLMETHOD CEcoLab1_IEcoConnectionPointContainer_FindConnectionPoint(/* in */ struct IEcoConnectionPointContainer* me, /* in */ const UGUID* riid, /* out */ struct IEcoConnectionPoint** ppCP) {
+    CEcoLab1* pCMe = (CEcoLab1*)((uint64_t)me - (uint64_t)3 * sizeof(struct IEcoUnknown*));
+    int16_t result = 0;
+
+    if (me == 0 || ppCP == 0) {
+        return -1;
+    }
+
+    if (!IsEqualUGUID(riid, &IID_IEcoLab1Events)) {
+        *ppCP = 0;
+        /* CONNECT_E_NOCONNECTION */
+        return -1;
+    }
+
+    if (pCMe->m_pISinkCP == 0) {
+        /* E_FAIL */
+        return -1;
+    }
+
+    pCMe->m_pISinkCP->m_pVTblICP->AddRef(&pCMe->m_pISinkCP->m_pVTblICP);
+    *ppCP = &pCMe->m_pISinkCP->m_pVTblICP;
+
+    return 0;
+}
+
 int16_t ECOCALLMETHOD initCEcoLab1(/*in*/ IEcoLab1Ptr_t me, /* in */ struct IEcoUnknown *pIUnkSystem) {
     CEcoLab1* pCMe = (CEcoLab1*)me;
     IEcoInterfaceBus1* pIBus = 0;
@@ -516,6 +721,12 @@ int16_t ECOCALLMETHOD initCEcoLab1(/*in*/ IEcoLab1Ptr_t me, /* in */ struct IEco
         result = pIBus->pVTbl->QueryComponent(pIBus, &CID_EcoCalculatorA, 0, &IID_IEcoCalculatorX, (void**)&pCMe->m_pIX);
     }
 
+    /* Создание точки подключения */
+    result = createCEcoLab1ConnectionPoint((IEcoUnknown*)pCMe->m_pISys, &pCMe->m_pVTblICPC, &IID_IEcoLab1Events, (IEcoConnectionPoint**)&((pCMe)->m_pISinkCP));
+    if (result == 0 && pCMe->m_pISinkCP != 0) {
+        result = 0;
+    }
+
     /* Проверка указателей */
     if (me == 0 ) {
         return result;
@@ -532,7 +743,6 @@ int16_t ECOCALLMETHOD initCEcoLab1(/*in*/ IEcoLab1Ptr_t me, /* in */ struct IEco
     return result;
 }
 
-/* Create Virtual Table IEcoLab1 */
 IEcoLab1VTbl g_x277FC00C35624096AFCFC125B94EEC90VTbl = {
     CEcoLab1_QueryInterface,
     CEcoLab1_AddRef,
@@ -560,17 +770,14 @@ IEcoCalculatorYVTbl g_Y_x5F2B9C8D6E1A49479A8B6C5D4E3F2A1BVTbl = {
     CEcoLab1_Y_Division
 };
 
-/*
- *
- * <сводка>
- *   Функция Create
- * </сводка>
- *
- * <описание>
- *   Функция создания экземпляра
- * </описание>
- *
- */
+IEcoConnectionPointContainerVTbl g_x0000000500000000C000000000000046VTblCPC = {
+    CEcoLab1_IEcoConnectionPointContainer_QueryInterface,
+    CEcoLab1_IEcoConnectionPointContainer_AddRef,
+    CEcoLab1_IEcoConnectionPointContainer_Release,
+    CEcoLab1_IEcoConnectionPointContainer_EnumConnectionPoints,
+    CEcoLab1_IEcoConnectionPointContainer_FindConnectionPoint
+};
+
 int16_t ECOCALLMETHOD createCEcoLab1(/* in */ IEcoUnknown* pIUnkSystem, /* in */ IEcoUnknown* pIUnkOuter, /* out */ IEcoLab1** ppIEcoLab1) {
     int16_t result = -1;
     IEcoSystem1* pISys = 0;
@@ -634,6 +841,8 @@ int16_t ECOCALLMETHOD createCEcoLab1(/* in */ IEcoUnknown* pIUnkSystem, /* in */
     /* Создание таблицы функций интерфейса IEcoCalculatorY */
     pCMe->m_pVTblIY = &g_Y_x5F2B9C8D6E1A49479A8B6C5D4E3F2A1BVTbl;
 
+    pCMe->m_pVTblICPC = &g_x0000000500000000C000000000000046VTblCPC;
+
     /* Инициализация данных */
     pCMe->m_Name = 0;
 
@@ -650,17 +859,6 @@ int16_t ECOCALLMETHOD createCEcoLab1(/* in */ IEcoUnknown* pIUnkSystem, /* in */
     return 0;
 }
 
-/*
- *
- * <сводка>
- *   Функция Delete
- * </сводка>
- *
- * <описание>
- *   Функция освобождения экземпляра
- * </описание>
- *
- */
 void ECOCALLMETHOD deleteCEcoLab1(/* in */ IEcoLab1* pIEcoLab1) {
     CEcoLab1* pCMe = (CEcoLab1*)pIEcoLab1;
     IEcoMemoryAllocator1* pIMem = 0;
